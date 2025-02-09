@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block title %}429 Too Many Requests{% endblock %}
+{% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/errors.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="error-code">429</div>
+  <div class="error-message">Too Many Requests</div>
+  <p>
+    {{ error or "You have sent too many requests in a given amount of time." }}
+  </p>
+  <a class="back-home" href="{{ '/' }}">Return Home</a>
+</div>
+{% endblock %}

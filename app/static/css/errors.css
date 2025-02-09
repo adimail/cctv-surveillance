@@ -1,0 +1,43 @@
+.container {
+  background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+
+  padding: 40px;
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.error-code {
+  font-size: 72px;
+  font-weight: bold;
+  margin: 20px 0;
+  color: #e74c3c;
+}
+
+.error-message {
+  font-size: 24px;
+  margin: 20px 0;
+}
+
+p {
+  font-size: 16px;
+}
+
+.back-home {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.back-home:hover {
+  background-color: #45a049;
+}

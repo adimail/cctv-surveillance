@@ -1,0 +1,133 @@
+{% extends "base.html" %} {% block title %}Neural Nexus Dashboard{% endblock %}
+{% block head %} {{ super() }}
+<style>
+  .home-container {
+    padding: 20px;
+  }
+  .home-container h2 {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  .home-container h3 {
+    font-size: 1.5em;
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 10px;
+  }
+  .home-container p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  .home-container ul {
+    list-style: disc;
+    margin-left: 20px;
+    margin-bottom: 15px;
+    color: #444;
+  }
+  .home-container li {
+    margin-bottom: 5px;
+  }
+  .home-container a {
+    color: #4caf50;
+    text-decoration: none;
+  }
+  .home-container a:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="home-container">
+  <h2>Smart CCTV Surveillance with AI Analytics</h2>
+  <p>
+    Leverage existing CCTV networks with AI/ML integration for real-time crowd
+    management, crime prevention, and workplace monitoring. Our AI-powered
+    system analyzes live video feeds to detect patterns, recognize faces,
+    identify suspicious activities, and predict potential risks. This
+    intelligent approach enhances security by automating responses, ensuring
+    safety compliance, and optimizing workflows—all while reducing human errors
+    and maximizing the efficiency of existing infrastructure at minimal cost.
+  </p>
+
+  <h3>Feasibility Analysis</h3>
+  <p><strong>Technical Feasibility:</strong></p>
+  <ul>
+    <li>Utilizes existing CCTV infrastructure with minimal upgrades.</li>
+    <li>
+      Employs proven AI/ML technologies for real-time detection and analysis.
+    </li>
+    <li>
+      Features a scalable architecture with edge computing and cloud
+      integration.
+    </li>
+  </ul>
+
+  <p><strong>Economic Feasibility:</strong></p>
+  <ul>
+    <li>Cost-effective solution leveraging current systems.</li>
+    <li>
+      Reduces manual monitoring costs and prevents incidents, saving resources.
+    </li>
+  </ul>
+
+  <p><strong>Operational Feasibility:</strong></p>
+  <ul>
+    <li>Seamless integration with existing systems via APIs.</li>
+    <li>
+      Real-time alerts and detailed reports improve response times and
+      operational efficiency.
+    </li>
+  </ul>
+
+  <p><strong>Legal and Ethical Feasibility:</strong></p>
+  <ul>
+    <li>Compliant with data privacy laws (e.g., GDPR).</li>
+    <li>
+      Ensures secure and anonymized data processing to protect privacy and
+      security.
+    </li>
+  </ul>
+
+  <h3>Scalability and Design</h3>
+  <p><strong>Horizontal Scalability:</strong></p>
+  <ul>
+    <li>Integrates additional CCTV cameras and sensors seamlessly.</li>
+    <li>
+      Supports multi-location deployments with centralized or distributed
+      processing.
+    </li>
+    <li>
+      Cloud-based architecture allows for seamless scaling as data volume
+      increases.
+    </li>
+  </ul>
+
+  <p><strong>Vertical Scalability:</strong></p>
+  <ul>
+    <li>AI/ML models can be upgraded for advanced anomaly detection.</li>
+    <li>
+      Edge devices can be enhanced for higher computational power to improve
+      real-time processing.
+    </li>
+    <li>Cloud resources are dynamically allocated to meet growing demands.</li>
+  </ul>
+
+  <p><strong>Modular Design & Adaptability:</strong></p>
+  <ul>
+    <li>
+      Modular architecture supports the addition of new features such as license
+      plate recognition, audio analysis, and predictive analytics.
+    </li>
+    <li>
+      APIs allow seamless integration with third-party systems or future
+      enhancements.
+    </li>
+    <li>
+      Adaptable to various environments—including public spaces, workplaces, and
+      high-security zones—to meet dynamic operational needs.
+    </li>
+  </ul>
+</div>
+{% endblock %}

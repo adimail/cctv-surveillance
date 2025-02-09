@@ -1,0 +1,6 @@
+Flask>=2.0.0
+flask-cors>=3.0.0
+tensorflow>=2.0.0
+opencv-python>=4.0.0
+numpy>=1.18.0
+Flask-Limiter>=3.10.1

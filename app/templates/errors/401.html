@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %}401 Unauthorized{% endblock %} {%
+block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/errors.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="error-code">401</div>
+  <div class="error-message">Unauthorized</div>
+  <p>You are not authorized to access this page.</p>
+  <a class="back-home" href="{{ '/' }}">Return Home</a>
+</div>
+{% endblock %}

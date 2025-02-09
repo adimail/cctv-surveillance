@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Neural Nexus Dashboard{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div id="container">
+      <div id="sidebar">
+        <h2>Neural Nexus</h2>
+        <!-- Update links as needed -->
+        <a href="/">Home</a>
+        <a href="{{ url_for('feed.live_feed') }}">View Live Feed</a>
+        <a href="/history">History</a>
+        <a href="/broadcast">Broadcast</a>
+        <a href="/analytics">Analytics</a>
+      </div>
+      <div id="main">
+        {% block content %}{% endblock %}
+
+        <footer class="footer">
+          <p>
+            <strong>Project:</strong> Real-Time Crowd Monitoring and Crime
+            Prevention System<br />
+            <strong>GitHub Repository:</strong>
+            <a
+              href="https://github.com/adimail/cctv-surveillance"
+              target="_blank"
+              >https://github.com/adimail/cctv-surveillance</a
+            ><br />
+            Developed as part of a IIT Kanpur hackathon
+          </p>
+        </footer>
+      </div>
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

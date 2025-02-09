@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %}400 Bad Request{% endblock %} {%
+block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/errors.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="error-code">400</div>
+  <div class="error-message">Bad Request</div>
+  <p>The request could not be understood by the server.</p>
+  <a class="back-home" href="{{ '/' }}">Return Home</a>
+</div>
+{% endblock %}
