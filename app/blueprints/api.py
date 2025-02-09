@@ -7,10 +7,12 @@ from app.model import model
 api = Blueprint("api", __name__)
 
 def preprocess_frame(frame):
-    frame = cv2.resize(frame, (224, 224))
+    frame = cv2.resize(frame, (299, 299))
     frame = frame / 255.0
-    frame = np.expand_dims(frame, axis=0)
-    return frame
+    frames = np.repeat(np.expand_dims(frame, axis=0), 10, axis=0)
+    frames = np.expand_dims(frames, axis=0)
+    return frames
+
 
 @api.route("/predict", methods=['POST'])
 def predict():

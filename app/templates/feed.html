@@ -13,6 +13,7 @@
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
+    position: relative;
   }
   .video-wrapper {
     position: relative;
@@ -28,16 +29,90 @@
     height: 100%;
     object-fit: cover;
   }
+  .prediction-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 5px;
+    text-align: center;
+    font-size: 1em;
+    font-weight: bold;
+  }
 </style>
 {% endblock %} {% block content %}
 <h1>Live Feed</h1>
 <div class="feed-grid-container">
   {% for video_url in video_urls %}
-  <div class="video-container">
+  <div class="video-container" id="container{{ loop.index }}">
     <div class="video-wrapper">
-      <video src="{{ video_url }}" autoplay loop muted playsinline></video>
+      <video
+        id="video{{ loop.index }}"
+        src="{{ video_url }}"
+        autoplay
+        loop
+        muted
+        playsinline
+      ></video>
+    </div>
+    <div class="prediction-overlay" id="overlay{{ loop.index }}">
+      Loading...
     </div>
   </div>
   {% endfor %}
 </div>
+{% endblock %} {% block scripts %}
+<script>
+  const FIGHT_THRESHOLD = 0.5;
+  const PREDICTION_INTERVAL = 3000;  // 3 seconds
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Assuming video elements are identified as video1, video2, etc.
+    const numVideos = {{ video_urls|length }};
+
+    for (let i = 1; i <= numVideos; i++) {
+      const videoElem = document.getElementById(`video${i}`);
+      const overlayElem = document.getElementById(`overlay${i}`);
+
+      videoElem.addEventListener('loadeddata', function() {
+        setInterval(function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = 224;
+          canvas.height = 224;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+
+          canvas.toBlob(function(blob) {
+            let formData = new FormData();
+            formData.append('video_frame', blob, 'frame.jpg');
+
+            overlayElem.innerText = "Loading...";
+
+            fetch("/api/predict", {
+              method: "POST",
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              const score = data.anomaly_score;
+              if (score > FIGHT_THRESHOLD) {
+                overlayElem.innerText = "Fight Detected";
+                overlayElem.style.backgroundColor = "rgba(255, 0, 0, 0.7)";
+              } else {
+                overlayElem.innerText = "No Fight";
+                overlayElem.style.backgroundColor = "rgba(0, 128, 0, 0.7)";
+              }
+            })
+            .catch(error => {
+              console.error("Error in prediction:", error);
+              overlayElem.innerText = "Error";
+            });
+          }, 'image/jpeg');
+        }, PREDICTION_INTERVAL);
+      });
+    }
+  });
+</script>
 {% endblock %}
