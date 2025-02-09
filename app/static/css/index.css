@@ -1,48 +1,66 @@
+/* Global Styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  background-color: #f7f7f7;
+  color: #333;
 }
+
+/* Hide scrollbar for main content */
 #main::-webkit-scrollbar {
   display: none;
 }
 
+/* Container Setup */
 #container {
   display: flex;
   flex-direction: row;
   height: 100vh;
 }
+
+/* Sidebar Styling */
 #sidebar {
-  width: 15%;
-  background: #333;
+  width: 20%;
+  background: #313131;
   color: #fff;
   height: 100vh;
-  padding: 0 30px;
+  padding: 20px;
+  box-sizing: border-box;
 }
+
 #sidebar h2 {
-  margin-top: 20px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+  border-bottom: 1px solid #444;
   padding-bottom: 10px;
-  border-bottom: 1px solid #555;
 }
-#sidebar a {
+
+#sidebar a,
+.button {
   display: block;
   margin: 10px 0;
-  padding: 10px;
-  background: #4caf50;
+  padding: 12px 15px;
+  background: #000;
   color: #fff;
   text-decoration: none;
-  border-radius: 5px;
+  font-size: 1em;
+  transition: background 0.3s ease;
+  cursor: pointer;
 }
+
 #sidebar a:hover {
-  background: #45a049;
+  background: #111;
 }
+
 #main {
-  width: 100%;
-  padding-top: 30px;
-  padding: 0 20px;
+  width: 80%;
+  padding: 30px 40px;
   min-height: 100vh;
   overflow-y: auto;
+  box-sizing: border-box;
+  background-color: #fff;
 }
 
 .footer {
@@ -51,4 +69,22 @@ body {
   border-top: 1px solid #ddd;
   font-size: 0.95em;
   color: #666;
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #222;
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.6;
+  font-size: 1em;
+  color: #555;
 }

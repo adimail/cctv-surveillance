@@ -1,9 +1,11 @@
 import os
 from flask import Blueprint, render_template, url_for, current_app, jsonify
+from flask_login import login_required
 
 feed = Blueprint("feed", __name__)
 
 @feed.route("/")
+@login_required
 def live_feed():
     try:
         static_folder = current_app.static_folder

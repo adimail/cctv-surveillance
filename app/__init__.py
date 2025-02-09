@@ -1,10 +1,9 @@
 from flask import Flask, render_template
-from app.blueprints.home import home_bp
-from app.blueprints.api import api
-from app.blueprints.feed import feed
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_login import LoginManager
+from app.extensions import db
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -12,18 +11,40 @@ limiter = Limiter(
     storage_uri="memory://",
 )
 
-
 def create_app():
     app = Flask(__name__)
     CORS(app)
+    app.config["SECRET_KEY"] = "nqMt+o1BxO2Wkaj4ogmFtg=="
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SECURE"] = True
+    app.config["SESSION_PERMANENT"] = False
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+    db.init_app(app)
+    login_manager = LoginManager(app)
+    login_manager.login_view = 'auth.login'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        from app.models import User
+        return User.query.get(int(user_id))
+
+    from app.blueprints.home import home_bp
+    from app.blueprints.api import api
+    from app.blueprints.feed import feed
+    from app.blueprints.auth import auth
 
     app.register_blueprint(home_bp)
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(feed, url_prefix='/feed')
+    app.register_blueprint(auth, url_prefix='/auth')
 
     limiter.limit("200 per hour")(home_bp)
     limiter.limit("200 per hour")(api)
     limiter.limit("200 per hour")(feed)
+    limiter.limit("200 per hour")(auth)
 
     @app.errorhandler(404)
     def page_not_found(_):

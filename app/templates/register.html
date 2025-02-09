@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Register - Neural Nexus Dashboard{%
+endblock %} {% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/auth.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="auth-container">
+  <h2>Register</h2>
+  <form method="POST" action="{{ url_for('auth.register') }}">
+    <input type="text" name="username" placeholder="Username" required />
+    <input type="password" name="password" placeholder="Password" required />
+    <select name="role" required>
+      <option value="">Select Role</option>
+      <option value="admin">Admin</option>
+      <option value="user">User</option>
+    </select>
+    <input type="submit" class="button" value="Register" />
+  </form>
+  <div class="auth-link">
+    <p>
+      Already have an account?
+      <a href="{{ url_for('auth.login') }}">Login here</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
