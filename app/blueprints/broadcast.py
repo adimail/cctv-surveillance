@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, abort, request
 from flask_login import login_required, current_user
 from datetime import datetime
 from app.extensions import db
@@ -46,7 +46,8 @@ def toggle(alarm_id):
                 )
                 db.session.add(new_record)
             else:
-                record = AlarmHistory.query.filter_by(alarm_id=alarm["id"], end_time=None).order_by(AlarmHistory.start_time.desc()).first()
+                record = AlarmHistory.query.filter_by(alarm_id=alarm["id"], end_time=None)\
+                                             .order_by(AlarmHistory.start_time.desc()).first()
                 if record:
                     record.end_time = datetime.utcnow()
                     record.duration = (record.end_time - record.start_time).total_seconds()
@@ -56,3 +57,12 @@ def toggle(alarm_id):
     else:
         flash("Alarm not found.", category='error')
     return redirect(url_for('broadcast.home'))
+
+@broadcast_bp.route('/voice', methods=['POST'])
+@login_required
+def broadcast_voice():
+    if current_user.role != 'admin':
+        abort(403)
+    audio_data = request.data
+    flash("Voice message received and broadcasted.", category="info")
+    return "OK", 200

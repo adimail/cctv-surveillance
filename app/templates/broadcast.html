@@ -20,9 +20,101 @@ endblock %} {% block head %} {{ super() }}
     <div class="alarm-room">{{ alarm.room }}</div>
     <div class="alarm-location">{{ alarm.location }}</div>
     <div class="alarm-status">
-      {% if alarm.active %} Active {% else %} Inactive {% endif %}
+      {% if alarm.active %}Active{% else %}Inactive{% endif %}
     </div>
   </a>
   {% endfor %}
 </div>
+
+<hr />
+
+<h1>Voice Broadcast</h1>
+<p>Select a location below to send a voice message:</p>
+<div id="voiceStatus"></div>
+<table class="voice-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Room</th>
+      <th>Location</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for alarm in alarms %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ alarm.room }}</td>
+      <td>{{ alarm.location }}</td>
+      <td>
+        <button
+          class="voice-button"
+          onclick="startVoiceRecording({{ alarm.id }})"
+        >
+          Send Voice Message
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} {% block scripts %}
+<script>
+  function startVoiceRecording(alarmId) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Microphone access is not supported in your browser.");
+      return;
+    }
+    document.getElementById("voiceStatus").innerText =
+      "Recording for alarm " + alarmId + "...";
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        let mediaRecorder = new MediaRecorder(stream);
+        let audioChunks = [];
+        mediaRecorder.start();
+
+        mediaRecorder.addEventListener("dataavailable", (event) => {
+          audioChunks.push(event.data);
+        });
+
+        mediaRecorder.addEventListener("stop", () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          let formData = new FormData();
+          formData.append("alarm_id", alarmId);
+          formData.append("audio", audioBlob, "voice_message.webm");
+
+          fetch("/broadcast/voice", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => {
+              if (response.ok) {
+                document.getElementById("voiceStatus").innerText =
+                  "Voice message sent for alarm " + alarmId;
+              } else {
+                document.getElementById("voiceStatus").innerText =
+                  "Error sending voice message for alarm " + alarmId;
+              }
+            })
+            .catch((error) => {
+              console.error("Error sending voice message:", error);
+              document.getElementById("voiceStatus").innerText =
+                "Error sending voice message for alarm " + alarmId;
+            });
+        });
+
+        setTimeout(() => {
+          mediaRecorder.stop();
+          stream.getTracks().forEach((track) => track.stop());
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error("Microphone access error:", err);
+        document.getElementById("voiceStatus").innerText =
+          "Microphone access denied.";
+      });
+  }
+</script>
 {% endblock %}

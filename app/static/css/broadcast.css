@@ -39,3 +39,35 @@
 .alarm-location {
   font-size: 0.9em;
 }
+
+.voice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+.voice-table th,
+.voice-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.voice-table th {
+  background-color: #f2f2f2;
+}
+.voice-button {
+  padding: 8px 12px;
+  background-color: #f86300;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.voice-button:hover {
+  background-color: #c75c04;
+}
+
+#voiceStatus {
+  margin-top: 20px;
+  font-size: 1em;
+}
