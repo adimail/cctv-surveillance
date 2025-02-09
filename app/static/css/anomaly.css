@@ -1,0 +1,63 @@
+.anomaly-container {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.anomaly-container h1,
+.anomaly-container h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.anomaly-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.anomaly-container label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.anomaly-container input[type="text"],
+.anomaly-container input[type="number"],
+.anomaly-container textarea,
+.anomaly-container select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.readonly-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.readonly-table th,
+.readonly-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.readonly-table th {
+  background-color: #f2f2f2;
+}
+
+.section-title {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}

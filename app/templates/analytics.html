@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block title %}Analytics - Neural Nexus Dashboard{%
+endblock %} {% block head %} {{ super() }}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/analytics.css') }}"
+/>
+{% endblock %} {% block content %}
+<h1>Analytics</h1>
+<p>
+  This is the analytics page. Here you can view performance metrics and system
+  insights.
+</p>
+
+<div class="grid-container">
+  <div class="chart-container">
+    <canvas id="statusChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="trendChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="alarmChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="durationChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="confidenceChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="alarmDurationChart"></canvas>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

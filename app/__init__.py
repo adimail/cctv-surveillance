@@ -35,16 +35,25 @@ def create_app():
     from app.blueprints.api import api
     from app.blueprints.feed import feed
     from app.blueprints.auth import auth
+    from app.blueprints.history import history_bp
+    from app.blueprints.broadcast import broadcast_bp
+    from app.blueprints.analytics import analytics_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(feed, url_prefix='/feed')
     app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(history_bp, url_prefix='/history')
+    app.register_blueprint(broadcast_bp, url_prefix='/broadcast')
+    app.register_blueprint(analytics_bp, url_prefix='/analytics')
 
     limiter.limit("200 per hour")(home_bp)
     limiter.limit("200 per hour")(api)
     limiter.limit("200 per hour")(feed)
     limiter.limit("200 per hour")(auth)
+    limiter.limit("200 per hour")(history_bp)
+    limiter.limit("200 per hour")(broadcast_bp)
+    limiter.limit("200 per hour")(analytics_bp)
 
     @app.errorhandler(404)
     def page_not_found(_):

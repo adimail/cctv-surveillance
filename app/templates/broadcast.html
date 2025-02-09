@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Broadcast - Neural Nexus Dashboard{%
+endblock %} {% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/broadcast.css') }}"
+/>
+{% endblock %} {% block content %}
+<h1>Broadcast</h1>
+<p>
+  This is the broadcast page. Here you can manage live broadcasts and streaming
+  events.
+</p>
+
+<div class="alarm-grid">
+  {% for alarm in alarms %}
+  <a
+    href="{{ url_for('broadcast.toggle', alarm_id=alarm.id) }}"
+    class="alarm-button {% if alarm.active %}active{% endif %}"
+  >
+    <div class="alarm-room">{{ alarm.room }}</div>
+    <div class="alarm-location">{{ alarm.location }}</div>
+    <div class="alarm-status">
+      {% if alarm.active %} Active {% else %} Inactive {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

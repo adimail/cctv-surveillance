@@ -1,0 +1,119 @@
+{% extends "base.html" %} {% block title %}History - Neural Nexus Dashboard{%
+endblock %} {% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/history.css') }}"
+/>
+{% endblock %} {% block content %}
+<h1>History</h1>
+<p>
+  This is the history page. Here you can review past anomalies and view system
+  logs.
+</p>
+
+{% if current_user.role == 'admin' %}
+<p>
+  <a
+    class="button"
+    style="max-width: fit-content"
+    href="{{ url_for('history.add') }}"
+    >Add New Anomaly</a
+  >
+</p>
+{% endif %}
+
+<div class="tabs">
+  <button id="anomalyTab" class="tab-button active">Anomaly History</button>
+  <button id="alarmTab" class="tab-button">Alarm History</button>
+</div>
+
+<div id="anomaly-history" class="history-table"></div>
+<div id="alarm-history" class="history-table" style="display: none"></div>
+{% endblock %} {% block scripts %}
+<script>
+  var anomalies = {{ anomalies | tojson }};
+  var alarmHistory = {{ alarm_history | tojson }};
+
+  function createTable(data, columns) {
+    var table = document.createElement("table");
+    table.className = "history-table-content";
+    table.style.borderCollapse = "collapse";
+    table.style.width = "100%";
+
+    var thead = document.createElement("thead");
+    var headerRow = document.createElement("tr");
+
+    var th = document.createElement("th");
+    th.innerText = "#";
+    headerRow.appendChild(th);
+
+    columns.forEach(function(col) {
+      var th = document.createElement("th");
+      th.innerText = col.header;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement("tbody");
+    data.forEach(function(item, index) {
+      var row = document.createElement("tr");
+      var serialCell = document.createElement("td");
+      serialCell.innerText = index + 1;
+      row.appendChild(serialCell);
+
+      columns.forEach(function(col) {
+        var td = document.createElement("td");
+        td.innerText = item[col.field] || "";
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  var anomalyColumns = [
+    {header: "Location", field: "location"},
+    {header: "Camera ID", field: "camera_id"},
+    {header: "IP Address", field: "ipaddress"},
+    {header: "Anomaly Code", field: "anomaly_code"},
+    {header: "Anomaly Name", field: "anomaly_name"},
+    {header: "Timestamp", field: "timestamp"},
+    {header: "Duration", field: "duration"},
+    {header: "Confidence", field: "confidence"},
+    {header: "Status", field: "status"},
+    {header: "Actions Taken", field: "actions_taken"},
+    {header: "Video Path", field: "videopath"}
+  ];
+
+  var alarmColumns = [
+    {header: "Alarm ID", field: "alarm_id"},
+    {header: "Room", field: "room"},
+    {header: "Location", field: "location"},
+    {header: "Activated By", field: "activated_by"},
+    {header: "Start Time", field: "start_time"},
+    {header: "End Time", field: "end_time"},
+    {header: "Duration", field: "duration"}
+  ];
+
+  var anomalyTable = createTable(anomalies, anomalyColumns);
+  document.getElementById("anomaly-history").appendChild(anomalyTable);
+  var alarmTable = createTable(alarmHistory, alarmColumns);
+  document.getElementById("alarm-history").appendChild(alarmTable);
+
+  document.getElementById("anomalyTab").addEventListener("click", function() {
+    document.getElementById("anomaly-history").style.display = "block";
+    document.getElementById("alarm-history").style.display = "none";
+    this.classList.add("active");
+    document.getElementById("alarmTab").classList.remove("active");
+  });
+
+  document.getElementById("alarmTab").addEventListener("click", function() {
+    document.getElementById("anomaly-history").style.display = "none";
+    document.getElementById("alarm-history").style.display = "block";
+    this.classList.add("active");
+    document.getElementById("anomalyTab").classList.remove("active");
+  });
+</script>
+{% endblock %}
