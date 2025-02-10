@@ -47,13 +47,13 @@ def create_app():
     app.register_blueprint(broadcast_bp, url_prefix='/broadcast')
     app.register_blueprint(analytics_bp, url_prefix='/analytics')
 
-    limiter.limit("200 per hour")(home_bp)
-    limiter.limit("200 per hour")(api)
-    limiter.limit("200 per hour")(feed)
-    limiter.limit("200 per hour")(auth)
-    limiter.limit("200 per hour")(history_bp)
-    limiter.limit("200 per hour")(broadcast_bp)
-    limiter.limit("200 per hour")(analytics_bp)
+    limiter.limit("30 per hour")(home_bp)
+    limiter.limit("30 per hour")(api)
+    limiter.limit("30 per hour")(feed)
+    limiter.limit("30 per hour")(auth)
+    limiter.limit("30 per hour")(history_bp)
+    limiter.limit("30 per hour")(broadcast_bp)
+    limiter.limit("30 per hour")(analytics_bp)
 
     @app.errorhandler(404)
     def page_not_found(_):

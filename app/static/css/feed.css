@@ -1,0 +1,64 @@
+.feed-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 50px;
+  justify-items: center;
+}
+
+.video-container {
+  width: 100%;
+  position: relative;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  overflow: hidden;
+}
+
+.video-wrapper video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prediction-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 5px;
+  text-align: center;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.button-container {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 0;
+}
+
+.button-container button {
+  width: 100%;
+}
+
+.toggle-button {
+  padding: 8px 16px;
+  font-size: 1em;
+  background-color: #fff;
+  color: #1c2dc1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}

@@ -42,28 +42,22 @@ def home():
 @history_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    if current_user.role != 'admin':
-        abort(403)
     if request.method == 'POST':
-        location = request.form.get('location')
-        camera_id = request.form.get('camera_id')
-        ipaddress = request.form.get('ipaddress')
-        anomaly_code = request.form.get('anomaly_code')
-        anomaly_name = request.form.get('anomaly_name')
-        duration = request.form.get('duration')
-        confidence = request.form.get('confidence')
-        status = request.form.get('status')
-        actions_taken = request.form.get('actions_taken')
-        videopath = request.form.get('videopath')
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form
 
-        try:
-            duration = float(duration) if duration else None
-        except ValueError:
-            duration = None
-        try:
-            confidence = float(confidence) if confidence else None
-        except ValueError:
-            confidence = None
+        location = data.get('location')
+        camera_id = data.get('camera_id')
+        ipaddress = data.get('ipaddress')
+        anomaly_code = data.get('anomaly_code')
+        anomaly_name = data.get('anomaly_name')
+        duration = data.get('duration')
+        confidence = data.get('confidence')
+        status = data.get('status')
+        actions_taken = data.get('actions_taken')
+        videopath = data.get('videopath')
 
         new_anomaly = Anomaly(
             location=location,
@@ -80,7 +74,6 @@ def add():
         db.session.add(new_anomaly)
         db.session.commit()
         flash("Anomaly added successfully!", category="success")
-        return redirect(url_for('history.home'))
 
     return render_template("add_anomaly.html")
 

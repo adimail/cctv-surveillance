@@ -109,7 +109,7 @@ cctv-surveillance/
 
 ## Screenshots
 
-Below are sample screenshots demonstrating key features of the Neural Nexus Dashboard. (Replace the placeholder paths with your actual screenshot images.)
+Below are sample screenshots demonstrating key features of the Neural Nexus Dashboard.
 
 - **Live Feed:**
   ![Live Feed](screenshots/livefeed.jpeg)

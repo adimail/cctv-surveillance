@@ -29,7 +29,7 @@ endblock %} {% block head %} {{ super() }}
 <hr />
 
 <h1>Voice Broadcast</h1>
-<p>Select a location below to send a voice message:</p>
+<p>Select a location below to record a voice message:</p>
 <div id="voiceStatus"></div>
 <table class="voice-table">
   <thead>
@@ -49,10 +49,20 @@ endblock %} {% block head %} {{ super() }}
       <td>
         <button
           class="voice-button"
-          onclick="startVoiceRecording({{ alarm.id }})"
+          id="record-btn-{{ alarm.id }}"
+          onclick="toggleRecording({{ alarm.id }})"
         >
-          Send Voice Message
+          Start Recording
         </button>
+        <button
+          class="replay-button"
+          id="replay-btn-{{ alarm.id }}"
+          style="display: none"
+          onclick="replayRecording({{ alarm.id }})"
+        >
+          Replay Recording
+        </button>
+        <span id="timer-{{ alarm.id }}"></span>
       </td>
     </tr>
     {% endfor %}
@@ -60,61 +70,75 @@ endblock %} {% block head %} {{ super() }}
 </table>
 {% endblock %} {% block scripts %}
 <script>
-  function startVoiceRecording(alarmId) {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Microphone access is not supported in your browser.");
-      return;
-    }
-    document.getElementById("voiceStatus").innerText =
-      "Recording for alarm " + alarmId + "...";
+  let mediaRecorders = {};
+  let audioChunks = {};
+  let recordings = {};
+  let timers = {};
 
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        let mediaRecorder = new MediaRecorder(stream);
-        let audioChunks = [];
-        mediaRecorder.start();
+  function toggleRecording(alarmId) {
+    const recordBtn = document.getElementById(`record-btn-${alarmId}`);
+    const replayBtn = document.getElementById(`replay-btn-${alarmId}`);
+    const timerEl = document.getElementById(`timer-${alarmId}`);
 
-        mediaRecorder.addEventListener("dataavailable", (event) => {
-          audioChunks.push(event.data);
-        });
+    if (
+      mediaRecorders[alarmId] &&
+      mediaRecorders[alarmId].state === "recording"
+    ) {
+      mediaRecorders[alarmId].stop();
+      recordBtn.textContent = "Start Recording";
+      clearInterval(timers[alarmId]);
+    } else {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Microphone access is not supported in your browser.");
+        return;
+      }
 
-        mediaRecorder.addEventListener("stop", () => {
-          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          let formData = new FormData();
-          formData.append("alarm_id", alarmId);
-          formData.append("audio", audioBlob, "voice_message.webm");
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          mediaRecorders[alarmId] = new MediaRecorder(stream);
+          audioChunks[alarmId] = [];
+          let seconds = 10;
+          recordBtn.textContent = `${seconds}s Remaining`;
+          replayBtn.style.display = "none";
 
-          fetch("/broadcast/voice", {
-            method: "POST",
-            body: formData,
-          })
-            .then((response) => {
-              if (response.ok) {
-                document.getElementById("voiceStatus").innerText =
-                  "Voice message sent for alarm " + alarmId;
-              } else {
-                document.getElementById("voiceStatus").innerText =
-                  "Error sending voice message for alarm " + alarmId;
-              }
-            })
-            .catch((error) => {
-              console.error("Error sending voice message:", error);
-              document.getElementById("voiceStatus").innerText =
-                "Error sending voice message for alarm " + alarmId;
+          mediaRecorders[alarmId].ondataavailable = (event) => {
+            audioChunks[alarmId].push(event.data);
+          };
+
+          mediaRecorders[alarmId].onstop = () => {
+            const audioBlob = new Blob(audioChunks[alarmId], {
+              type: "audio/webm",
             });
-        });
+            recordings[alarmId] = new Audio(URL.createObjectURL(audioBlob));
+            recordBtn.textContent = "Start Recording";
+            replayBtn.style.display = "inline-block";
+            timerEl.textContent = "";
+            stream.getTracks().forEach((track) => track.stop());
+          };
 
-        setTimeout(() => {
-          mediaRecorder.stop();
-          stream.getTracks().forEach((track) => track.stop());
-        }, 5000);
-      })
-      .catch((err) => {
-        console.error("Microphone access error:", err);
-        document.getElementById("voiceStatus").innerText =
-          "Microphone access denied.";
-      });
+          mediaRecorders[alarmId].start();
+          timers[alarmId] = setInterval(() => {
+            seconds--;
+            if (seconds > 0) {
+              recordBtn.textContent = `${seconds}s Remaining`;
+            } else {
+              mediaRecorders[alarmId].stop();
+              clearInterval(timers[alarmId]);
+            }
+          }, 1000);
+        })
+        .catch((err) => {
+          console.error("Microphone access error:", err);
+          alert("Microphone access denied.");
+        });
+    }
+  }
+
+  function replayRecording(alarmId) {
+    if (recordings[alarmId]) {
+      recordings[alarmId].play();
+    }
   }
 </script>
 {% endblock %}

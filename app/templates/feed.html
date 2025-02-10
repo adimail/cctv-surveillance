@@ -1,45 +1,35 @@
-{% extends "base.html" %} {% block title %}Live Feed - Neural Nexus{% endblock
+{% extends "base.html" %} {% block title %} Live Feed - Neural Nexus {% endblock
 %} {% block head %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/feed.css') }}"
+/>
 <style>
-  .feed-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    justify-items: center;
+  button[id^="setAlarmButton"] {
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
   }
-  .video-container {
-    background: #fff;
-    border: 1px solid #ccc;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    position: relative;
+  button[id^="setAlarmButton"].active {
+    background-color: red;
   }
-  .video-wrapper {
-    position: relative;
-    width: 100%;
-    padding-bottom: 75%;
-    overflow: hidden;
+  button[id^="recordAnomalyButton"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
   }
-  .video-wrapper video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .prediction-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    padding: 5px;
-    text-align: center;
-    font-size: 1em;
-    font-weight: bold;
+  button[id^="recordAnomalyButton"].active {
+    background-color: #007bff;
   }
 </style>
 {% endblock %} {% block content %}
@@ -56,61 +46,158 @@
         muted
         playsinline
       ></video>
+      <div class="prediction-overlay" id="overlay{{ loop.index }}">
+        Loading...
+      </div>
     </div>
-    <div class="prediction-overlay" id="overlay{{ loop.index }}">
-      Loading...
+    <div class="button-container">
+      {% if current_user.role == "admin" %}
+      <button id="setAlarmButton{{ loop.index }}" data-toggled="false">
+        Set Alarm
+      </button>
+      {% endif %}
+      <button id="recordAnomalyButton{{ loop.index }}" data-toggled="false">
+        Record Anomaly
+      </button>
     </div>
   </div>
   {% endfor %}
 </div>
 {% endblock %} {% block scripts %}
 <script>
+  // Helper function to generate a random IP address
+  function randomIP() {
+    return Math.floor(Math.random()*256) + '.' +
+           Math.floor(Math.random()*256) + '.' +
+           Math.floor(Math.random()*256) + '.' +
+           Math.floor(Math.random()*256);
+  }
+
+  // Helper function to get the current timestamp in "YYYY-MM-DD HH:MM:SS" format
+  function getCurrentTimestamp() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  // Return a random confidence value between 0 and 0.9 (2 decimals)
+  function randomConfidence() {
+    return (Math.random() * 0.9).toFixed(2);
+  }
+
+  // Return a random duration (in seconds) between 5 and 60
+  function randomDuration() {
+    return Math.floor(Math.random() * (60 - 5 + 1)) + 5;
+  }
+
+  // Return a random location from the given list
+  function randomLocation() {
+    const locations = ["Lobby", "Entrance", "Reading Hall", "Balcony", "Parking Lot", "Elevator", "Staircase", "Restroom"];
+    return locations[Math.floor(Math.random() * locations.length)];
+  }
+
   const FIGHT_THRESHOLD = 0.5;
-  const PREDICTION_INTERVAL = 3000;  // 3 seconds
 
   document.addEventListener("DOMContentLoaded", function() {
-    // Assuming video elements are identified as video1, video2, etc.
     const numVideos = {{ video_urls|length }};
-
     for (let i = 1; i <= numVideos; i++) {
       const videoElem = document.getElementById(`video${i}`);
       const overlayElem = document.getElementById(`overlay${i}`);
 
       videoElem.addEventListener('loadeddata', function() {
-        setInterval(function() {
-          const canvas = document.createElement('canvas');
-          canvas.width = 224;
-          canvas.height = 224;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = 224;
+        canvas.height = 224;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
 
-          canvas.toBlob(function(blob) {
-            let formData = new FormData();
-            formData.append('video_frame', blob, 'frame.jpg');
+        canvas.toBlob(function(blob) {
+          let formData = new FormData();
+          formData.append('video_frame', blob, 'frame.jpg');
+          overlayElem.innerText = "Loading...";
+          fetch("/api/predict", {
+            method: "POST",
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const score = data.anomaly_score;
+            if (score > FIGHT_THRESHOLD) {
+              overlayElem.innerText = "Fight Detected";
+              overlayElem.style.backgroundColor = "rgba(255, 0, 0, 0.7)";
+            } else {
+              overlayElem.innerText = "No Fight";
+              overlayElem.style.backgroundColor = "rgba(0, 128, 0, 0.7)";
+            }
+          })
+          .catch(error => {
+            console.error("Error in prediction:", error);
+            overlayElem.innerText = "Error";
+          });
+        }, 'image/jpeg');
+      }, { once: true });
 
-            overlayElem.innerText = "Loading...";
+      {% if current_user.role == "admin" %}
+      const setAlarmButton = document.getElementById(`setAlarmButton${i}`);
+      setAlarmButton.addEventListener('click', function() {
+        const toggled = setAlarmButton.getAttribute('data-toggled') === 'true';
+        if (toggled) {
+          setAlarmButton.setAttribute('data-toggled', 'false');
+          setAlarmButton.innerText = "Set Alarm";
+          setAlarmButton.classList.remove('active');
+        } else {
+          setAlarmButton.setAttribute('data-toggled', 'true');
+          setAlarmButton.innerText = "Alarm Set";
+          setAlarmButton.classList.add('active');
+        }
+      });
+      {% endif %}
 
-            fetch("/api/predict", {
-              method: "POST",
-              body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-              const score = data.anomaly_score;
-              if (score > FIGHT_THRESHOLD) {
-                overlayElem.innerText = "Fight Detected";
-                overlayElem.style.backgroundColor = "rgba(255, 0, 0, 0.7)";
-              } else {
-                overlayElem.innerText = "No Fight";
-                overlayElem.style.backgroundColor = "rgba(0, 128, 0, 0.7)";
-              }
-            })
-            .catch(error => {
-              console.error("Error in prediction:", error);
-              overlayElem.innerText = "Error";
-            });
-          }, 'image/jpeg');
-        }, PREDICTION_INTERVAL);
+      const recordAnomalyButton = document.getElementById(`recordAnomalyButton${i}`);
+      recordAnomalyButton.addEventListener('click', function() {
+        if (recordAnomalyButton.disabled) return;
+        recordAnomalyButton.disabled = true;
+        recordAnomalyButton.innerText = "Recording...";
+
+        const videoSrc = videoElem.src;
+        const filename = videoSrc.split('/').pop();
+        const camera_id = filename.split('.')[0];
+
+        const anomalyData = {
+          ipaddress: randomIP(),
+          camera_id: camera_id,
+          videopath: videoSrc,
+          timestamp: getCurrentTimestamp(),
+          location: randomLocation(),
+          anomaly_code: "AC107",
+          anomaly_name: "Fight detected",
+          duration: randomDuration(),
+          confidence: randomConfidence(),
+          status: "No action taken",
+          actions_taken: ""
+        };
+
+        fetch('/history/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(anomalyData)
+        })
+        .then(data => {
+          recordAnomalyButton.innerText = "Anomaly Recorded";
+          recordAnomalyButton.classList.add('active');
+        })
+        .catch(error => {
+          console.error("Error recording anomaly:", error);
+          recordAnomalyButton.innerText = "Error Recording";
+          recordAnomalyButton.disabled = false;
+        });
       });
     }
   });
