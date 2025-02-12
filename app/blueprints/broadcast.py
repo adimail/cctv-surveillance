@@ -27,18 +27,17 @@ def home():
         abort(403)
     return render_template("broadcast.html", alarms=alarms)
 
-@broadcast_bp.route('/toggle/<int:alarm_id>')
+@broadcast_bp.route('/toggle/<int:id>')
 @login_required
-def toggle(alarm_id):
+def toggle(id):
     if current_user.role != 'admin':
         abort(403)
     for alarm in alarms:
-        if alarm["id"] == alarm_id:
+        if alarm["id"] == id:
             new_state = not alarm["active"]
             alarm["active"] = new_state
             if new_state:
                 new_record = AlarmHistory(
-                    alarm_id=alarm["id"],
                     room=alarm["room"],
                     location=alarm["location"],
                     activated_by=current_user.username,
@@ -46,7 +45,7 @@ def toggle(alarm_id):
                 )
                 db.session.add(new_record)
             else:
-                record = AlarmHistory.query.filter_by(alarm_id=alarm["id"], end_time=None)\
+                record = AlarmHistory.query.filter_by(id=alarm["id"], end_time=None)\
                                              .order_by(AlarmHistory.start_time.desc()).first()
                 if record:
                     record.end_time = datetime.utcnow()

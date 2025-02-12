@@ -14,7 +14,7 @@ endblock %} {% block head %} {{ super() }}
 <div class="alarm-grid">
   {% for alarm in alarms %}
   <a
-    href="{{ url_for('broadcast.toggle', alarm_id=alarm.id) }}"
+    href="{{ url_for('broadcast.toggle', id=alarm.id) }}"
     class="alarm-button {% if alarm.active %}active{% endif %}"
   >
     <div class="alarm-room">{{ alarm.room }}</div>
