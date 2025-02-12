@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 import cv2
 import numpy as np
 import time
@@ -16,6 +16,11 @@ def preprocess_frame(frame):
 
 @api.route("/predict", methods=['POST'])
 def predict():
+    if model is None:
+        return jsonify({
+            'error': 'Model not available. Please check if the model file exists.'
+        }), 503
+
     if 'video_frame' not in request.files:
         return jsonify({'error': 'No video frame provided'}), 400
 
@@ -29,22 +34,51 @@ def predict():
 
     return jsonify({'anomaly_score': anomaly_score})
 
-@api.route('/stream', methods=['POST'])
-def process_stream():
-    video_file = request.files['video']
-    cap = cv2.VideoCapture(video_file.read())
+## ==========================================
+##
+##
+## Experimental feature to predict anomolies
+## from the live video stream.
+##
+## ==========================================
 
-    results = []
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
 
-        processed_frame = preprocess_frame(frame)
-        predictions = model.predict(processed_frame)
-        results.append(float(predictions[0][0]))
 
-        time.sleep(0.1)
 
-    cap.release()
-    return jsonify({'scores': results})
+# @api.route('/stream', methods=['POST', 'GET'])
+# def process_stream():
+#     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+#
+# camera = cv2.VideoCapture(0)
+# def generate_frames():
+#     last_prediction_time = time.time()
+#     anomaly_score = 0.0
+#
+#     while True:
+#         success, frame = camera.read()
+#         if not success:
+#             break
+#
+#         current_time = time.time()
+#         if current_time - last_prediction_time >= 10:
+#             processed_frame = preprocess_frame(frame)
+#             predictions = model.predict(processed_frame)
+#             anomaly_score = float(predictions[0][0])
+#             last_prediction_time = current_time
+#
+#         # Overlay anomaly score on the frame
+#         height, width, _ = frame.shape
+#         text = f"Anomaly Score: {anomaly_score:.2f}"
+#         font = cv2.FONT_HERSHEY_SIMPLEX
+#         font_scale = 1
+#         font_thickness = 2
+#         text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+#         text_x = (width - text_size[0]) // 2
+#         text_y = (height + text_size[1]) // 2
+#
+#         cv2.putText(frame, text, (text_x, text_y), font, font_scale, (0, 0, 255), font_thickness, cv2.LINE_AA)
+#
+#         _, buffer = cv2.imencode('.jpg', frame)
+#         frame = buffer.tobytes()
+#         yield (b'--frame\r\n'
+#                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')

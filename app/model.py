@@ -2,7 +2,6 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 
-
 class AttentionLayer(Layer):
     def __init__(self, **kwargs):
         super(AttentionLayer, self).__init__(**kwargs)
@@ -42,7 +41,13 @@ class AttentionLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[-1])
 
-model = tf.keras.models.load_model(
-    'model/fight_detection_model.h5',
-    custom_objects={'AttentionLayer': AttentionLayer}
-)
+model = None
+try:
+    model = tf.keras.models.load_model(
+        'model/fight_detection_model.h5',
+        custom_objects={'AttentionLayer': AttentionLayer}
+    )
+except FileNotFoundError as e:
+    print(f"Model is missing in this environment\n\n")
+except Exception as e:
+    print(f"Error loading model")

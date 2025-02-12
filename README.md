@@ -136,6 +136,12 @@ The model is compiled using the Adam optimizer (with a learning rate of 1e-4), a
    pip install -r requirements.txt
    ```
 
+   To test the application, you can run:
+
+   ```bash
+   python3 -m tests.test_routes
+   ```
+
 4. **Set up the database:**
 
    Run the following command to build the SQLite database in the `instance` folder (this should be done the first time you run the application):
