@@ -38,7 +38,6 @@ class AlarmHistory(db.Model):
     __tablename__ = 'alarm_history'
 
     id = db.Column(db.Integer, primary_key=True)
-    alarm_id = db.Column(db.Integer, nullable=False)
     room = db.Column(db.String(100), nullable=False)
     location = db.Column(db.String(255), nullable=True)
     activated_by = db.Column(db.String(150), nullable=False)
@@ -47,6 +46,6 @@ class AlarmHistory(db.Model):
     duration = db.Column(db.Float, nullable=True)
 
     def __repr__(self):
-        return (f"AlarmHistory(alarm_id={self.alarm_id}, room='{self.room}', "
+        return (f"AlarmHistory(id={self.id}, room='{self.room}', "
                 f"activated_by='{self.activated_by}', start_time='{self.start_time}', "
                 f"end_time='{self.end_time}', duration={self.duration})")

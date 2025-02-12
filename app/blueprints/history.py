@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, abort, request
 from flask_login import login_required, current_user
 from app.extensions import db
+from datetime import datetime
 from app.models import Anomaly, AlarmHistory
 
 history_bp = Blueprint('history', __name__)
@@ -28,7 +29,6 @@ def home():
 
     alarm_history = [{
         "id": record.id,
-        "alarm_id": record.alarm_id,
         "room": record.room,
         "location": record.location or "",
         "activated_by": record.activated_by,
@@ -39,72 +39,112 @@ def home():
 
     return render_template("history.html", anomalies=anomalies, alarm_history=alarm_history)
 
+
 @history_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
+    record_type = request.args.get('record_type', 'anomaly')  # Default to 'anomaly'
+
     if request.method == 'POST':
-        if request.is_json:
-            data = request.get_json()
+        data = request.get_json() if request.is_json else request.form
+
+        if record_type == 'alarm':
+            room = data.get('room')
+            location = data.get('location')
+            activated_by = data.get('activated_by')
+            start_time = data.get('start_time')
+            end_time = data.get('end_time')
+            duration = data.get('duration')
+
+            start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S') if start_time else None
+            end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S') if end_time else None
+
+            new_record = AlarmHistory(
+                room=room,
+                location=location,
+                activated_by=activated_by,
+                start_time=start_time,
+                end_time=end_time,
+                duration=duration
+            )
+            flash("Alarm history added successfully!", category="success")
         else:
-            data = request.form
+            location = data.get('location')
+            camera_id = data.get('camera_id')
+            ipaddress = data.get('ipaddress')
+            anomaly_code = data.get('anomaly_code')
+            anomaly_name = data.get('anomaly_name')
+            duration = data.get('duration')
+            confidence = data.get('confidence')
+            status = data.get('status')
+            actions_taken = data.get('actions_taken')
+            videopath = data.get('videopath')
 
-        location = data.get('location')
-        camera_id = data.get('camera_id')
-        ipaddress = data.get('ipaddress')
-        anomaly_code = data.get('anomaly_code')
-        anomaly_name = data.get('anomaly_name')
-        duration = data.get('duration')
-        confidence = data.get('confidence')
-        status = data.get('status')
-        actions_taken = data.get('actions_taken')
-        videopath = data.get('videopath')
+            new_record = Anomaly(
+                location=location,
+                camera_id=camera_id,
+                ipaddress=ipaddress,
+                anomaly_code=anomaly_code,
+                anomaly_name=anomaly_name,
+                duration=duration,
+                confidence=confidence,
+                status=status,
+                actions_taken=actions_taken,
+                videopath=videopath
+            )
+            flash("Anomaly added successfully!", category="success")
 
-        new_anomaly = Anomaly(
-            location=location,
-            camera_id=camera_id,
-            ipaddress=ipaddress,
-            anomaly_code=anomaly_code,
-            anomaly_name=anomaly_name,
-            duration=duration,
-            confidence=confidence,
-            status=status,
-            actions_taken=actions_taken,
-            videopath=videopath
-        )
-        db.session.add(new_anomaly)
+        db.session.add(new_record)
         db.session.commit()
-        flash("Anomaly added successfully!", category="success")
+        return redirect(url_for('history.home', record_type=record_type))
 
-    return render_template("add_anomaly.html")
+    return render_template("add_record.html", record_type=record_type)
 
-@history_bp.route('/edit/<int:anomaly_id>', methods=['GET', 'POST'])
+
+@history_bp.route('/edit/<int:record_id>', methods=['GET', 'POST'])
 @login_required
-def edit(anomaly_id):
+def edit(record_id):
     if current_user.role != 'admin':
         abort(403)
-    anomaly = Anomaly.query.get_or_404(anomaly_id)
+
+    record_type = request.args.get('record_type', 'anomaly')  # Default to 'anomaly'
+
+    if record_type == 'alarm':
+        record = AlarmHistory.query.get_or_404(record_id)
+    else:
+        record = Anomaly.query.get_or_404(record_id)
+
     if request.method == 'POST':
-        anomaly.location = request.form.get('location')
-        anomaly.camera_id = request.form.get('camera_id')
-        anomaly.ipaddress = request.form.get('ipaddress')
-        anomaly.anomaly_code = request.form.get('anomaly_code')
-        anomaly.anomaly_name = request.form.get('anomaly_name')
-        duration = request.form.get('duration')
-        confidence = request.form.get('confidence')
-        anomaly.status = request.form.get('status')
-        anomaly.actions_taken = request.form.get('actions_taken')
-        anomaly.videopath = request.form.get('videopath')
-        try:
-            anomaly.duration = float(duration) if duration else None
-        except ValueError:
-            anomaly.duration = None
-        try:
-            anomaly.confidence = float(confidence) if confidence else None
-        except ValueError:
-            anomaly.confidence = None
+        if record_type == 'alarm':
+            record.room = request.form.get('room')
+            record.location = request.form.get('location')
+            record.activated_by = request.form.get('activated_by')
+            record.start_time = request.form.get('start_time')
+            record.end_time = request.form.get('end_time')
+            record.duration = request.form.get('duration')
+            flash("Alarm history updated successfully!", category="success")
+        else:
+            record.location = request.form.get('location')
+            record.camera_id = request.form.get('camera_id')
+            record.ipaddress = request.form.get('ipaddress')
+            record.anomaly_code = request.form.get('anomaly_code')
+            record.anomaly_name = request.form.get('anomaly_name')
+            duration = request.form.get('duration')
+            confidence = request.form.get('confidence')
+            record.status = request.form.get('status')
+            record.actions_taken = request.form.get('actions_taken')
+            record.videopath = request.form.get('videopath')
+            try:
+                record.duration = float(duration) if duration else None
+            except ValueError:
+                record.duration = None
+            try:
+                record.confidence = float(confidence) if confidence else None
+            except ValueError:
+                record.confidence = None
+            flash("Anomaly updated successfully!", category="success")
 
         db.session.commit()
-        flash("Anomaly updated successfully!", category="success")
-        return redirect(url_for('history.home'))
+        return redirect(url_for('history.home', record_type=record_type))
 
-    return render_template("edit_anomaly.html", anomaly=anomaly)
+    return render_template("edit_record.html", record=record, record_type=record_type)

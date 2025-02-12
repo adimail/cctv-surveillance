@@ -73,7 +73,6 @@ with app.app_context():
 
     if not AlarmHistory.query.first():
         alarm_history1 = AlarmHistory(
-            alarm_id=1,
             room="Lobby",
             location="Main Lobby",
             activated_by="Aditya",
@@ -82,7 +81,6 @@ with app.app_context():
             duration=1800
         )
         alarm_history2 = AlarmHistory(
-            alarm_id=2,
             room="Entrance",
             location="Main Entrance",
             activated_by="Chinmay",
@@ -91,7 +89,6 @@ with app.app_context():
             duration=900
         )
         alarm_history5 = AlarmHistory(
-            alarm_id=5,
             room="Entrance",
             location="Main Entrance",
             activated_by="Aditya",
@@ -100,7 +97,6 @@ with app.app_context():
             duration=900
         )
         alarm_history3 = AlarmHistory(
-            alarm_id=3,
             room="Reading Hall",
             location="Reading Hall",
             activated_by="Manshi",
@@ -109,7 +105,6 @@ with app.app_context():
             duration=1800
         )
         alarm_history4 = AlarmHistory(
-            alarm_id=4,
             room="Balcony",
             location="Second Floor Balcony",
             activated_by="Swaroop",

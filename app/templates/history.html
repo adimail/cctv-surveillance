@@ -1,79 +1,163 @@
-{% extends "base.html" %} {% block title %}History - Neural Nexus Dashboard{%
-endblock %} {% block head %} {{ super() }}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static', filename='css/history.css') }}"
-/>
-{% endblock %} {% block content %}
+{% extends "base.html" %}
+
+{% block title %}History - Neural Nexus Dashboard{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}" />
+<style>
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .pagination button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        cursor: pointer;
+    }
+    .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .pagination .page-info {
+        margin: 0 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
 <h1>History</h1>
 <p>
-  This is the history page. Here you can review past anomalies and view system
-  logs.
+    This is the history page. Here you can review past anomalies and view system logs.
 </p>
 
 {% if current_user.role == 'admin' %}
 <p>
-  <a
-    class="button"
-    style="max-width: fit-content"
-    href="{{ url_for('history.add') }}"
-    >Add New Anomaly</a
-  >
+    <a class="button" style="max-width: fit-content" href="{{ url_for('history.add') }}">
+        Add New Anomaly
+    </a>
 </p>
 {% endif %}
 
 <div class="tabs">
-  <button id="anomalyTab" class="tab-button active">Anomaly History</button>
-  <button id="alarmTab" class="tab-button">Alarm History</button>
+    <button id="anomalyTab" class="tab-button active">Anomaly History</button>
+    <button id="alarmTab" class="tab-button">Alarm History</button>
 </div>
 
 <div id="anomaly-history" class="history-table"></div>
+<div id="anomaly-pagination" class="pagination"></div>
+
 <div id="alarm-history" class="history-table" style="display: none"></div>
-{% endblock %} {% block scripts %}
+<div id="alarm-pagination" class="pagination" style="display: none"></div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-  var anomalies = {{ anomalies | tojson }};
-  var alarmHistory = {{ alarm_history | tojson }};
+var anomalies = {{ anomalies | tojson }};
+var alarmHistory = {{ alarm_history | tojson }};
 
-  function createTable(data, columns) {
-    var table = document.createElement("table");
-    table.className = "history-table-content";
-    table.style.borderCollapse = "collapse";
-    table.style.width = "100%";
+function createPaginatedTable(data, columns, containerId, paginationId, itemsPerPage = 50) {
+    const container = document.getElementById(containerId);
+    const paginationContainer = document.getElementById(paginationId);
+    let currentPage = 1;
 
-    var thead = document.createElement("thead");
-    var headerRow = document.createElement("tr");
+    function renderTable(pageData) {
+        container.innerHTML = '';
+        
+        var table = document.createElement("table");
+        table.className = "history-table-content";
+        table.style.borderCollapse = "collapse";
+        table.style.width = "100%";
 
-    var th = document.createElement("th");
-    th.innerText = "#";
-    headerRow.appendChild(th);
+        // Create header
+        var thead = document.createElement("thead");
+        var headerRow = document.createElement("tr");
+        var th = document.createElement("th");
+        th.innerText = "#";
+        headerRow.appendChild(th);
+        columns.forEach(function(col) {
+            var th = document.createElement("th");
+            th.innerText = col.header;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
 
-    columns.forEach(function(col) {
-      var th = document.createElement("th");
-      th.innerText = col.header;
-      headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+        var tbody = document.createElement("tbody");
+        pageData.forEach(function(item, index) {
+            var row = document.createElement("tr");
+            var serialCell = document.createElement("td");
+            serialCell.innerText = ((currentPage - 1) * itemsPerPage) + index + 1;
+            row.appendChild(serialCell);
+            
+            columns.forEach(function(col) {
+                var td = document.createElement("td");
+                td.innerText = item[col.field] || "";
+                row.appendChild(td);
+            });
+            tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        container.appendChild(table);
+    }
 
-    var tbody = document.createElement("tbody");
-    data.forEach(function(item, index) {
-      var row = document.createElement("tr");
-      var serialCell = document.createElement("td");
-      serialCell.innerText = index + 1;
-      row.appendChild(serialCell);
+    function renderPagination() {
+        paginationContainer.innerHTML = '';
+        const totalPages = Math.ceil(data.length / itemsPerPage);
 
-      columns.forEach(function(col) {
-        var td = document.createElement("td");
-        td.innerText = item[col.field] || "";
-        row.appendChild(td);
-      });
-      tbody.appendChild(row);
-    });
-    table.appendChild(tbody);
-    return table;
-  }
+        const prevButton = document.createElement('button');
+        prevButton.innerText = 'Previous';
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateView();
+            }
+        });
+        paginationContainer.appendChild(prevButton);
 
-  var anomalyColumns = [
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'page-info';
+        pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+        paginationContainer.appendChild(pageInfo);
+
+        const nextButton = document.createElement('button');
+        nextButton.innerText = 'Next';
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateView();
+            }
+        });
+        paginationContainer.appendChild(nextButton);
+    }
+
+    function updateView() {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = data.slice(startIndex, endIndex);
+        
+        renderTable(pageData);
+        renderPagination();
+    }
+
+    updateView();
+
+    return {
+        updateData: function(newData) {
+            data = newData;
+            currentPage = 1;
+            updateView();
+        }
+    };
+}
+
+var anomalyColumns = [
     {header: "Location", field: "location"},
     {header: "Camera ID", field: "camera_id"},
     {header: "IP Address", field: "ipaddress"},
@@ -85,35 +169,36 @@ endblock %} {% block head %} {{ super() }}
     {header: "Status", field: "status"},
     {header: "Actions Taken", field: "actions_taken"},
     {header: "Video Path", field: "videopath"}
-  ];
+];
 
-  var alarmColumns = [
-    {header: "Alarm ID", field: "alarm_id"},
+var alarmColumns = [
     {header: "Room", field: "room"},
     {header: "Location", field: "location"},
     {header: "Activated By", field: "activated_by"},
     {header: "Start Time", field: "start_time"},
     {header: "End Time", field: "end_time"},
     {header: "Duration", field: "duration"}
-  ];
+];
 
-  var anomalyTable = createTable(anomalies, anomalyColumns);
-  document.getElementById("anomaly-history").appendChild(anomalyTable);
-  var alarmTable = createTable(alarmHistory, alarmColumns);
-  document.getElementById("alarm-history").appendChild(alarmTable);
+var anomalyTable = createPaginatedTable(anomalies, anomalyColumns, "anomaly-history", "anomaly-pagination");
+var alarmTable = createPaginatedTable(alarmHistory, alarmColumns, "alarm-history", "alarm-pagination");
 
-  document.getElementById("anomalyTab").addEventListener("click", function() {
+document.getElementById("anomalyTab").addEventListener("click", function() {
     document.getElementById("anomaly-history").style.display = "block";
+    document.getElementById("anomaly-pagination").style.display = "flex";
     document.getElementById("alarm-history").style.display = "none";
+    document.getElementById("alarm-pagination").style.display = "none";
     this.classList.add("active");
     document.getElementById("alarmTab").classList.remove("active");
-  });
+});
 
-  document.getElementById("alarmTab").addEventListener("click", function() {
+document.getElementById("alarmTab").addEventListener("click", function() {
     document.getElementById("anomaly-history").style.display = "none";
+    document.getElementById("anomaly-pagination").style.display = "none";
     document.getElementById("alarm-history").style.display = "block";
+    document.getElementById("alarm-pagination").style.display = "flex";
     this.classList.add("active");
     document.getElementById("anomalyTab").classList.remove("active");
-  });
+});
 </script>
 {% endblock %}

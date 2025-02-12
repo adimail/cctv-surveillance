@@ -29,7 +29,6 @@ def get_analytics_data():
 
     alarm_history = [{
          "id": record.id,
-         "alarm_id": record.alarm_id,
          "room": record.room,
          "location": record.location or "",
          "activated_by": record.activated_by,

@@ -1,0 +1,103 @@
+{# edit_record.html #}
+{% extends "base.html" %}
+{% block title %}
+  {% if record_type == 'alarm' %}
+    Edit Alarm - Neural Nexus Dashboard
+  {% else %}
+    Edit Anomaly - Neural Nexus Dashboard
+  {% endif %}
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/anomaly.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="anomaly-container">
+  {% if record_type == 'alarm' %}
+    <h2>Edit Alarm Record</h2>
+    <table class="readonly-table">
+      <tr>
+        <th>Room</th>
+        <td>{{ record.room or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Location</th>
+        <td>{{ record.location or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Activated By</th>
+        <td>{{ record.activated_by or 'N/A' }}</td>
+      </tr>
+    </table>
+    
+    <h3 class="section-title">Edit Details</h3>
+    <form method="POST" action="{{ url_for('history.edit', record_id=record.id, record_type='alarm') }}">
+      <label>Start Time:</label>
+      <input type="datetime-local" name="start_time" value="{{ record.start_time.strftime('%Y-%m-%dT%H:%M') if record.start_time }}" required />
+      
+      <label>End Time:</label>
+      <input type="datetime-local" name="end_time" value="{{ record.end_time.strftime('%Y-%m-%dT%H:%M') if record.end_time }}" />
+      
+      <label>Duration (seconds):</label>
+      <input type="number" name="duration" value="{{ record.duration }}" />
+      
+      <input type="submit" class="button" value="Update Alarm Record" />
+      <a class="button" style="text-align: center" href="/history">Go back</a>
+    </form>
+  {% else %}
+    <h2>Edit Anomaly</h2>
+    <table class="readonly-table">
+      <tr>
+        <th>Location</th>
+        <td>{{ record.location or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Camera ID</th>
+        <td>{{ record.camera_id or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>IP Address</th>
+        <td>{{ record.ipaddress or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Duration (seconds)</th>
+        <td>{{ record.duration or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Confidence</th>
+        <td>{{ record.confidence or 'N/A' }}</td>
+      </tr>
+      <tr>
+        <th>Video Path</th>
+        <td>{{ record.videopath or 'N/A' }}</td>
+      </tr>
+    </table>
+    
+    <h3 class="section-title">Edit Details</h3>
+    <form method="POST" action="{{ url_for('history.edit', record_id=record.id, record_type='anomaly') }}">
+      <label>Anomaly Code:</label>
+      <input type="text" name="anomaly_code" value="{{ record.anomaly_code }}" />
+      
+      <label>Anomaly Name:</label>
+      <input type="text" name="anomaly_name" value="{{ record.anomaly_name }}" />
+      
+      <label>Status:</label>
+      <select name="status" required>
+        <option value="">Select Status</option>
+        <option value="Pending" {% if record.status == 'Pending' %}selected{% endif %}>Pending</option>
+        <option value="In Progress" {% if record.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+        <option value="Reviewed" {% if record.status == 'Reviewed' %}selected{% endif %}>Reviewed</option>
+        <option value="Resolved" {% if record.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+      </select>
+      
+      <label>Actions Taken:</label>
+      <textarea name="actions_taken">{{ record.actions_taken }}</textarea>
+      
+      <input type="submit" class="button" value="Update Anomaly" />
+      <a class="button" style="text-align: center" href="/history">Go back</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}
