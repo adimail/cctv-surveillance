@@ -1,0 +1,88 @@
+{# add_record.html #}
+{% extends "base.html" %}
+{% block title %}
+  {% if record_type == 'alarm' %}
+    Add Alarm - Neural Nexus Dashboard
+  {% else %}
+    Add Anomaly - Neural Nexus Dashboard
+  {% endif %}
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/anomaly.css') }}" />
+{% endblock %}
+
+{% block content %}
+<div class="anomaly-container">
+  {% if record_type == 'alarm' %}
+    <h2>Add New Alarm Record</h2>
+    <form method="POST" action="{{ url_for('history.add', record_type='alarm') }}">
+      <label>Alarm ID:</label>
+      
+      <label>Room:</label>
+      <input type="text" name="room" placeholder="Room" required />
+      
+      <label>Location:</label>
+      <input type="text" name="location" placeholder="Location" />
+      
+      <label>Activated By:</label>
+      <input type="text" name="activated_by" placeholder="Activated By" required />
+      
+      <label>Start Time:</label>
+      <input type="datetime-local" name="start_time" required />
+      
+      <label>End Time:</label>
+      <input type="datetime-local" name="end_time" />
+      
+      <label>Duration (seconds):</label>
+      <input type="number" name="duration" placeholder="Duration" />
+      
+      <input type="submit" class="button" value="Add Alarm Record" />
+      <a class="button" style="text-align: center" href="/history">Go back</a>
+    </form>
+  {% else %}
+    <h2>Add New Anomaly</h2>
+    <form method="POST" action="{{ url_for('history.add', record_type='anomaly') }}">
+      <label>Location:</label>
+      <input type="text" name="location" placeholder="Location" />
+      
+      <label>Camera ID:</label>
+      <input type="text" name="camera_id" placeholder="Camera ID" />
+      
+      <label>IP Address:</label>
+      <input type="text" name="ipaddress" placeholder="IP Address" />
+      
+      <label>Anomaly Code:</label>
+      <input type="text" name="anomaly_code" placeholder="Anomaly Code" />
+      
+      <label>Anomaly Name:</label>
+      <input type="text" name="anomaly_name" placeholder="Anomaly Name" />
+      
+      <label>Duration (seconds):</label>
+      <input type="number" name="duration" placeholder="Duration" step="0.01" />
+      
+      <label>Confidence:</label>
+      <input type="number" name="confidence" placeholder="Confidence" step="0.01" min="0" max="1" />
+      
+      <label>Status:</label>
+      <select name="status" required>
+        <option value="">Select Status</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Reviewed">Reviewed</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      
+      <label>Actions Taken:</label>
+      <textarea name="actions_taken" placeholder="Actions Taken"></textarea>
+      
+      <label>Video Path:</label>
+      <input type="text" name="videopath" placeholder="Video Path" />
+      
+      <input type="submit" class="button" value="Add Anomaly" />
+      <a class="button" style="text-align: center" href="/history">Go back</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}
